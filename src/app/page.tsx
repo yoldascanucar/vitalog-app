@@ -127,7 +127,7 @@ export default function LandingPage() {
           transition={{ delay: 1.2 }}
           className="mt-12 text-[9px] font-black uppercase tracking-[0.35em] text-gray-500"
         >
-          VitaLog Medical Systems © 2026
+          VıtaLog Medıcal Systems © 2026
         </motion.p>
       </div>
     </div>
