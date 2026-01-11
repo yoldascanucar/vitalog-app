@@ -42,12 +42,19 @@ export default function AccountPage() {
                     .single();
 
                 const metadata = user.user_metadata || {};
+
+                // Normalize gender values (convert old Turkish values to new format)
+                let genderValue = profile?.gender || metadata.gender || "";
+                if (genderValue === 'Erkek') genderValue = 'male';
+                if (genderValue === 'Kadın') genderValue = 'female';
+                if (genderValue === 'Diğer') genderValue = 'other';
+
                 setFormData({
                     first_name: profile?.first_name || metadata.first_name || "",
                     last_name: profile?.last_name || metadata.last_name || "",
                     tc_no: profile?.tc_no || metadata.tc_no || "",
                     birth_date: profile?.birth_date || metadata.birth_date || "",
-                    gender: profile?.gender || metadata.gender || "",
+                    gender: genderValue,
                     email: user.email || "",
                     phone: profile?.phone || "",
                     avatar_url: localStorage.getItem(`avatar_${user.id}`) || ""
@@ -193,8 +200,9 @@ export default function AccountPage() {
                         <label className="block text-xs font-bold text-gray-500 mb-1">{t('profile.gender')}</label>
                         <select value={formData.gender} onChange={(e) => setFormData({ ...formData, gender: e.target.value })} className="w-full rounded-xl bg-gray-50 border-2 border-gray-200 p-3 text-sm font-medium focus:border-emerald-500 focus:ring-0">
                             <option value="">{t('register.gender_placeholder')}</option>
-                            <option value="Erkek">{t('register.gender_male')}</option>
-                            <option value="Kadın">{t('register.gender_female')}</option>
+                            <option value="male">{t('profile.gender_male')}</option>
+                            <option value="female">{t('profile.gender_female')}</option>
+                            <option value="other">{t('profile.gender_other')}</option>
                         </select>
                     </div>
                 </div>
@@ -202,7 +210,7 @@ export default function AccountPage() {
                 {/* Save Button */}
                 <button type="submit" disabled={saving} className="w-full rounded-xl bg-emerald-600 py-4 text-sm font-black text-white hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    {saving ? "KAYDEDILIYOR..." : t('profile.save_changes')}
+                    {saving ? t('medication_detail.saving') : t('profile.save_changes')}
                 </button>
             </form>
 

@@ -25,6 +25,16 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
 
+    // Helper function to translate gender values
+    const getGenderTranslation = (gender: string) => {
+        if (!gender) return t('common.not_specified');
+        // Handle old Turkish values
+        if (gender === 'Erkek' || gender === 'male') return t('profile.gender_male');
+        if (gender === 'Kadın' || gender === 'female') return t('profile.gender_female');
+        if (gender === 'Diğer' || gender === 'other') return t('profile.gender_other');
+        return gender;
+    };
+
     useEffect(() => {
         async function getProfile() {
             try {
@@ -151,7 +161,7 @@ export default function ProfilePage() {
                         <div className="rounded-full bg-gray-100 p-2.5 text-gray-600"><User className="h-5 w-5" /></div>
                         <div>
                             <p className="text-xs font-medium text-gray-500">{t('profile.gender')}</p>
-                            <p className="font-semibold text-foreground">{profile.gender || t('common.not_specified')}</p>
+                            <p className="font-semibold text-foreground">{getGenderTranslation(profile.gender)}</p>
                         </div>
                     </div>
                 </div>

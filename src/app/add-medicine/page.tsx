@@ -100,9 +100,8 @@ export default function AddMedicinePage() {
                     const logs = [];
                     let currentDate = new Date(startDate);
 
-                    // Bugünü normalize et (saat 00:00:00)
-                    const todayNormalized = new Date();
-                    todayNormalized.setHours(0, 0, 0, 0);
+                    // Şu anki zamanı al (geçmiş loglar oluşturulmasın)
+                    const now = new Date();
 
                     // Tarih aralığını dön
                     while (currentDate <= endDate) {
@@ -111,8 +110,8 @@ export default function AddMedicinePage() {
                             const scheduledTime = new Date(currentDate);
                             scheduledTime.setHours(hours, minutes, 0, 0);
 
-                            // Sadece bugünden itibaren (ve saat uygunsa) log oluştur
-                            if (scheduledTime >= todayNormalized) {
+                            // Sadece gelecekteki zamanlar için log oluştur
+                            if (scheduledTime > now) {
                                 logs.push({
                                     medication_id: medicationData.id,
                                     user_id: user.id,
@@ -315,7 +314,7 @@ export default function AddMedicinePage() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="flex w-full items-center justify-center rounded-3xl bg-emerald-600 p-6 text-2xl font-black text-white shadow-xl shadow-emerald-200 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-[0.96] mt-4"
+                    className="flex w-full items-center justify-center rounded-3xl bg-emerald-600 p-4 text-base font-black text-white shadow-xl shadow-emerald-200 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 transition-all active:scale-[0.96] mt-4"
                 >
                     {loading ? (
                         <Loader2 className="h-8 w-8 animate-spin" />

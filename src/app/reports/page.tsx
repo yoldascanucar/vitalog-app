@@ -51,11 +51,12 @@ export default function TransactionsPage() {
                     return;
                 }
 
-                // Fetch Medications for Filter
+                // Fetch Medications for Filter and Calculation
                 const { data: medsData } = await supabase
                     .from("medications")
-                    .select("id, name")
+                    .select("id, name, frequency_count, reminder_times, start_date")
                     .eq("user_id", user.id)
+                    // Removed strict status filter to ensure we get all meds with logs
                     .order("name");
 
                 setMedications(medsData || []);
@@ -88,25 +89,50 @@ export default function TransactionsPage() {
     const processLogs = (logs: any[], medId: string) => {
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-        // Filter logs by medication if selected
-        const filteredLogs = medId === "all"
+        // Filter logs by medication if selected, AND filter out ghost logs (before med start_date)
+        let filteredLogs = medId === "all"
             ? logs
             : logs.filter(log => log.medications?.id === medId);
 
-        // Process Summary Stats (for today and month)
-        const todayLogs = filteredLogs.filter(l => l.scheduled_time >= startOfToday);
-        const monthLogs = filteredLogs.filter(l => l.scheduled_time >= startOfMonth);
+        // Filter out logs scheduled before medication start_date
+        filteredLogs = filteredLogs.filter(log => {
+            const med = medications.find(m => m.id === log.medications?.id) as any;
+            if (med && med.start_date) {
+                const medStartDate = new Date(med.start_date);
+                medStartDate.setHours(0, 0, 0, 0);
+                return new Date(log.scheduled_time) >= medStartDate;
+            }
+            return true; // Keep if no start_date found
+        });
 
+        // Process Summary Stats (for today)
+        const todayLogs = filteredLogs.filter(l => l.scheduled_time >= startOfToday && l.scheduled_time < now.toISOString()); // Past logs today
         const todayTaken = todayLogs.filter(l => l.status === "taken").length;
-        const monthTaken = monthLogs.filter(l => l.status === "taken").length;
-        const monthRate = monthLogs.length > 0 ? Math.round((monthTaken / monthLogs.length) * 100) : 100;
+
+        // Calculate Daily Goal (Total) based on frequency
+        let dailyGoal = 0;
+        if (medId === "all") {
+            // Sum of all active medications' frequencies
+            dailyGoal = medications.reduce((sum, med: any) => {
+                const freq = med.frequency_count || med.reminder_times?.length || 1;
+                return sum + freq;
+            }, 0);
+        } else {
+            const med = medications.find(m => m.id === medId) as any;
+            if (med) {
+                dailyGoal = med.frequency_count || med.reminder_times?.length || 1;
+            }
+        }
+
+        // Calculate Rate based on Goal
+        // If dailyGoal is 8, taken is 1, rate is 12.5% -> 13%
+        const dailyRate = dailyGoal > 0 ? Math.round((todayTaken / dailyGoal) * 100) : 0;
 
         setSummary({
             todayTaken,
-            todayTotal: todayLogs.length,
-            monthlyRate: monthRate
+            todayTotal: dailyGoal,
+            monthlyRate: Math.min(dailyRate, 100)
         });
 
         // Group by Date for Timeline
@@ -177,22 +203,6 @@ export default function TransactionsPage() {
                 </div>
             </div>
 
-            {/* Summary Banner */}
-            <div className="mb-10 grid grid-cols-2 gap-4">
-                <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-gray-100">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                        {selectedMedId === 'all' ? t('reports.today_taken') : t('reports.total_taken')}
-                    </p>
-                    <div className="flex items-end gap-2 text-2xl font-black text-foreground">
-                        {summary.todayTaken} <span className="text-sm font-bold text-gray-400">/ {summary.todayTotal}</span>
-                    </div>
-                </div>
-                <div className="rounded-[28px] bg-emerald-600 p-5 shadow-lg shadow-emerald-100 text-white">
-                    <p className="text-[10px] font-black text-emerald-100 uppercase tracking-widest mb-1">{t('reports.success_rate')}</p>
-                    <div className="text-2xl font-black tracking-tight">%{summary.monthlyRate}</div>
-                </div>
-            </div>
-
             {/* Timeline */}
             <div className="relative space-y-10">
                 <div className="absolute left-6 top-8 bottom-0 w-0.5 bg-gray-200"></div>
@@ -233,8 +243,11 @@ export default function TransactionsPage() {
                                                 {log.medications?.dosage}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                            {log.status === 'taken' ? t('reports.status_taken') : t('reports.status_missed')}
+                                        <p className="text-xs font-medium text-gray-500 truncate">
+                                            {log.status === 'taken'
+                                                ? t('reports.status_taken')
+                                                : (new Date(log.scheduled_time) > new Date() ? t('reports.status_planned') : t('reports.status_missed'))
+                                            }
                                         </p>
                                     </div>
 
@@ -247,7 +260,10 @@ export default function TransactionsPage() {
                                             })}
                                         </div>
                                         <p className="text-[9px] font-medium text-gray-400 uppercase mt-0.5">
-                                            {log.status === 'taken' ? t('reports.status_taken_short') : t('reports.status_planned')}
+                                            {log.status === 'taken'
+                                                ? t('reports.status_taken_short')
+                                                : (new Date(log.scheduled_time) > new Date() ? t('reports.status_planned') : t('reports.status_missed'))
+                                            }
                                         </p>
                                     </div>
                                 </div>

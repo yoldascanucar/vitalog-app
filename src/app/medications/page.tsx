@@ -56,25 +56,34 @@ export default function MedicationsPage() {
                     const now = new Date().toISOString();
                     // Her ilaç için istatistikleri ve logları çek
                     const medsWithStats = await Promise.all((data || []).map(async (med) => {
-                        const { data: allPastLogs, error: logsError } = await supabase
+                        // Calculate today's date range
+                        const todayCurrent = new Date();
+                        todayCurrent.setHours(0, 0, 0, 0);
+                        const todayEnd = new Date();
+                        todayEnd.setHours(23, 59, 59, 999);
+
+                        const { data: todayLogs, error: logsError } = await supabase
                             .from("medication_logs")
                             .select("*")
                             .eq("medication_id", med.id)
-                            .lte("scheduled_time", now)
+                            .gte("scheduled_time", todayCurrent.toISOString())
+                            .lte("scheduled_time", todayEnd.toISOString())
                             .order("scheduled_time", { ascending: false });
 
-                        const logs = allPastLogs || [];
+                        const logs = todayLogs || [];
                         const missed = logs.filter(l => l.status === "missed");
                         const taken = logs.filter(l => l.status === "taken");
-                        const totalPast = logs.length;
-                        const rate = totalPast > 0 ? Math.round((taken.length / totalPast) * 100) : 100;
+
+                        // Calculate rate based on daily frequency (same as detail page)
+                        const dailyFrequency = med.frequency_count || med.reminder_times?.length || 1;
+                        const rate = Math.round((taken.length / dailyFrequency) * 100);
 
                         return {
                             ...med,
                             missed_count: missed.length,
                             taken_count: taken.length,
-                            total_past_count: totalPast,
-                            compliance_rate: rate,
+                            total_past_count: dailyFrequency,
+                            compliance_rate: Math.min(rate, 100), // Cap at 100%
                             missed_logs: missed
                         };
                     }));

@@ -140,7 +140,8 @@ export function AlarmProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
-        const interval = setInterval(fetchPendingDoses, 30000);
+        // Check every 1 second for instant alarm triggering
+        const interval = setInterval(fetchPendingDoses, 1000);
         fetchPendingDoses();
         return () => clearInterval(interval);
     }, [activeDose]);

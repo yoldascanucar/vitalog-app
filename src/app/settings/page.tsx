@@ -146,7 +146,7 @@ export default function SettingsPage() {
                 <section>
                     <div className="flex items-center gap-2 mb-4">
                         <User className="h-5 w-5 text-emerald-600" />
-                        <h2 className="text-sm font-black uppercase tracking-widest text-zinc-500">HESAP</h2>
+                        <h2 className="text-sm font-black uppercase tracking-widest text-zinc-500">{t('settings_account.account')}</h2>
                     </div>
                     <button
                         onClick={() => router.push('/settings/account')}
@@ -158,7 +158,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="text-left">
                                 <p className="text-sm font-bold text-zinc-900">{t('settings.profile')}</p>
-                                <p className="text-[10px] text-zinc-500">Ad, Soyad, TC, Doğum Tarihi, Cinsiyet</p>
+                                <p className="text-[10px] text-zinc-500">{t('profile.profile_desc')}</p>
                             </div>
                         </div>
                         <ChevronRight className="h-5 w-5 text-zinc-300" />
