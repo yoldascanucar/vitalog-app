@@ -103,9 +103,14 @@ export default function RegisterPage() {
             }
 
             // Trigger handles profile creation automatically
+            // Security: Force logout and require manual login after registration
             if (authData.session) {
-                router.push("/profile");
-                router.refresh();
+                await supabase.auth.signOut();
+                setSuccess(t('register.success_msg') || "Kayıt başarılı! Lütfen giriş yapınız.");
+                setTimeout(() => {
+                    router.push('/login');
+                    router.refresh();
+                }, 2000);
             } else if (authData.user) {
                 // Email verification case
                 setSuccess(t('register.success_msg'));
