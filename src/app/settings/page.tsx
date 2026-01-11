@@ -258,10 +258,13 @@ export default function SettingsPage() {
                         onClick={async () => {
                             setUpdating(true);
                             const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-                                redirectTo: `${window.location.origin}/auth/callback?next=/settings`,
+                                redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
                             });
                             if (error) setMessage({ type: 'error', text: error.message });
-                            else setMessage({ type: 'success', text: t('settings.password_reset_sent') });
+                            else {
+                                setMessage({ type: 'success', text: t('settings.password_reset_sent') });
+                                setTimeout(() => setMessage(null), 3000);
+                            }
                             setUpdating(false);
                         }}
                         disabled={updating}
@@ -294,9 +297,10 @@ export default function SettingsPage() {
 
             {message && (
                 <div className={cn(
-                    "fixed bottom-24 left-6 right-6 p-4 rounded-2xl shadow-2xl flex items-center justify-center text-center animate-in fade-in slide-in-from-bottom-4 duration-300 z-[60]",
+                    "absolute bottom-24 left-6 right-6 p-4 rounded-2xl shadow-2xl flex items-center justify-center gap-2 text-center animate-in fade-in slide-in-from-bottom-4 duration-300 z-[60]",
                     message.type === 'success' ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
                 )}>
+                    <span className="text-lg">✓</span>
                     <p className="text-xs font-black">{message.text}</p>
                 </div>
             )}

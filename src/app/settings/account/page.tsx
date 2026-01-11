@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Loader2, User, Calendar, ChevronLeft, Camera, Save, X } from "lucide-react";
+import { Loader2, User, Calendar, ChevronLeft, Camera, Save, X, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -42,6 +42,15 @@ export default function AccountPage() {
                     .single();
 
                 const metadata = user.user_metadata || {};
+
+
+
+
+                // YOLDAŞ CAN UÇAR 5001250040
+
+
+
+
 
                 // Normalize gender values (convert old Turkish values to new format)
                 let genderValue = profile?.gender || metadata.gender || "";
@@ -124,6 +133,8 @@ export default function AccountPage() {
             if (profileError) throw profileError;
 
             setMessage({ type: 'success', text: t('profile.profile_updated_success') });
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => setMessage(null), 3000);
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message });
         } finally {
@@ -216,7 +227,8 @@ export default function AccountPage() {
 
             {/* Success/Error Message */}
             {message && (
-                <div className={cn("fixed bottom-24 left-6 right-6 p-4 rounded-2xl shadow-2xl flex items-center justify-center text-center animate-in fade-in slide-in-from-bottom-4 duration-300 z-[60]", message.type === 'success' ? "bg-emerald-600 text-white" : "bg-red-600 text-white")}>
+                <div className={cn("absolute bottom-24 left-6 right-6 p-4 rounded-2xl shadow-2xl flex items-center justify-center gap-2 text-center animate-in fade-in slide-in-from-bottom-4 duration-300 z-[60]", message.type === 'success' ? "bg-emerald-600 text-white" : "bg-red-600 text-white")}>
+                    <span className="text-lg">✓</span>
                     <p className="text-xs font-black">{message.text}</p>
                 </div>
             )}

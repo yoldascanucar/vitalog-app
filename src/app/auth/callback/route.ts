@@ -33,6 +33,11 @@ export async function GET(request: Request) {
         )
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
+            // Check if this is a password recovery flow
+            const type = searchParams.get('type')
+            if (type === 'recovery') {
+                return NextResponse.redirect(`${origin}/reset-password`)
+            }
             return NextResponse.redirect(`${origin}${next}`)
         }
     }
