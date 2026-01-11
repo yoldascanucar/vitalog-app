@@ -233,7 +233,7 @@ export const translations = {
         },
         reports: {
             title: "HISTORY",
-            subtitle: "Medication History & Logs",
+            subtitle: "Medıcatıon Hıstory & Logs",
             filter_all: "ALL MEDICATIONS",
             today_taken: "TAKEN TODAY",
             total_taken: "TOTAL TAKEN",
@@ -268,7 +268,7 @@ export const translations = {
             profile_updated_success: "Profile updated successfully!",
         },
         login: {
-            title: "Login",
+            title: "LOGIN",
             subtitle: "Access your account",
             email_placeholder: "Email address",
             password_placeholder: "Password",
